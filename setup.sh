@@ -38,34 +38,38 @@ echo ""
 echo "Setting up ~/.claude/ ..."
 
 # Create directory structure
-mkdir -p "$CLAUDE_DIR"/{rules,scripts,knowledge/sessions,skills}
+mkdir -p "$CLAUDE_DIR"/{rules,scripts,knowledge/sessions,knowledge/self,knowledge/user,knowledge/problems,skills/onboard,state}
 
-# Copy scripts
+# --- Copy scripts ---
 cp "$SCRIPT_DIR/scripts/global-guard.py" "$CLAUDE_DIR/scripts/"
 cp "$SCRIPT_DIR/scripts/pre-compact.sh" "$CLAUDE_DIR/scripts/"
 cp "$SCRIPT_DIR/scripts/session-save-reminder.sh" "$CLAUDE_DIR/scripts/"
 chmod +x "$CLAUDE_DIR/scripts/"*.sh
 
-# Copy rules
-cp "$SCRIPT_DIR/rules/sessions.md" "$CLAUDE_DIR/rules/"
-cp "$SCRIPT_DIR/rules/workflow.md" "$CLAUDE_DIR/rules/"
+# --- Copy rules ---
+for rule in "$SCRIPT_DIR"/rules/*.md; do
+    cp "$rule" "$CLAUDE_DIR/rules/"
+done
 
-# Copy statusline
+# --- Copy skills ---
+cp "$SCRIPT_DIR/skills/onboard/SKILL.md" "$CLAUDE_DIR/skills/onboard/"
+
+# --- Copy statusline ---
 cp "$SCRIPT_DIR/statusline.sh" "$CLAUDE_DIR/"
 chmod +x "$CLAUDE_DIR/statusline.sh"
 
-# Copy settings.json
+# --- Copy settings.json ---
 cp "$SCRIPT_DIR/templates/settings.json" "$CLAUDE_DIR/settings.json"
 
-# Copy .gitignore
+# --- Copy .gitignore ---
 cp "$SCRIPT_DIR/templates/gitignore" "$CLAUDE_DIR/.gitignore"
 
-# Generate CLAUDE.md from template
+# --- Generate CLAUDE.md from template ---
 sed -e "s/{{USER_NAME}}/$USER_NAME/g" \
-    -e "s/{{USER_BIO}}/$USER_BIO/g" \
+    -e "s|{{USER_BIO}}|$USER_BIO|g" \
     "$SCRIPT_DIR/templates/CLAUDE.md" > "$CLAUDE_DIR/CLAUDE.md"
 
-# Initialize git repo if not already one
+# --- Initialize git repo if not already one ---
 if [[ ! -d "$CLAUDE_DIR/.git" ]]; then
     cd "$CLAUDE_DIR"
     git init
@@ -73,18 +77,36 @@ if [[ ! -d "$CLAUDE_DIR/.git" ]]; then
     git commit -m "initial setup from claude-starter-kit"
     echo ""
     echo "Git repo initialized at ~/.claude/"
-    echo "To back up your config, add a remote:"
+    echo "To back up your config, create a private repo and run:"
     echo "  cd ~/.claude && git remote add origin git@github.com:YOUR_USERNAME/claude-config.git && git push -u origin main"
 fi
 
 echo ""
 echo "=== Setup complete ==="
 echo ""
-echo "Your Claude Code assistant is ready. Start it with:"
+echo "Files installed:"
+echo "  ~/.claude/CLAUDE.md          — global instructions"
+echo "  ~/.claude/settings.json      — hooks + security"
+echo "  ~/.claude/rules/             — session, workflow, handoff rules"
+echo "  ~/.claude/scripts/           — security guard, pre-compact, reminders"
+echo "  ~/.claude/skills/onboard/    — guided first-session setup"
+echo "  ~/.claude/knowledge/         — your assistant's growing brain"
+echo "  ~/.claude/statusline.sh      — context/cost display"
+echo ""
+echo "=== Next: Start your first session ==="
+echo ""
+echo "  cd ~/.claude"
 echo "  claude"
 echo ""
-echo "First session tip: paste this to kick things off:"
-echo '  "Read ~/.claude/CLAUDE.md and rules/. Create knowledge/user/profile.md'
-echo '   about me. Ask questions to fill gaps — what I work on, tools I use,'
-echo '   what matters to me. Save everything to files."'
+echo "Then type:"
+echo "  /onboard"
+echo ""
+echo "This will walk you through a 20-30 minute guided setup:"
+echo "  1. Build your user profile"
+echo "  2. Define your 12 Favorite Problems (Feynman method)"
+echo "  3. Set your end goal and subgoals"
+echo "  4. Create initial tasks"
+echo "  5. Set up the AI's self-knowledge"
+echo ""
+echo "You can pause anytime and resume later with: /onboard resume"
 echo ""

@@ -8,6 +8,7 @@ Global instructions for all projects. Project-specific CLAUDE.md files override 
 - **Clarity over cleverness** — Prefer explicit, readable code over dense one-liners
 - **Bias toward action** — Decide and move for anything easily reversed; ask before committing to interfaces, data models, or destructive operations
 - **Finish the job** — Handle edge cases you can see. Clean up what you touched. But don't invent new scope.
+- **Externalize everything** — If it's not written to a file, it's gone next session. Write corrections, preferences, and decisions immediately.
 
 ## Communication Style
 
@@ -16,14 +17,28 @@ Global instructions for all projects. Project-specific CLAUDE.md files override 
 - Include specific numbers and dates, not vague descriptions
 - No emoji unless requested
 - No marketing language, hype, or superlatives
+- Don't flatter — specific praise when earned, never generic encouragement
 
 ## User Context
 
 **{{USER_NAME}}** — {{USER_BIO}}
 
+Full profile: `knowledge/user/profile.md`
+Goals: `knowledge/user/goals.md`
+12 Problems: `knowledge/problems/00-overview.md`
+
 ## Knowledge System
 
-- Knowledge files live in `~/.claude/knowledge/` — read on demand, don't preload
+- Knowledge files live in `~/.claude/knowledge/` — read on demand, don't preload all at once
 - Session notes go in `knowledge/sessions/` — every session gets a note
-- MEMORY.md is the cross-session index — keep it under 200 lines
-- Each fact lives in ONE place, referenced from others
+- MEMORY.md is the cross-session index — keep it under 200 lines, use it as an index not a document
+- Each fact lives in ONE place, referenced from others — no duplication
+- YAML frontmatter on every knowledge file (tags, date, type)
+
+## 12 Problems Filter
+
+When evaluating tasks, content, or opportunities, check against the user's 12 Favorite Problems in `knowledge/problems/00-overview.md`. If something doesn't connect to any problem, flag it. This is how the user filters signal from noise.
+
+## First Session
+
+If no knowledge files exist yet, suggest running `/onboard` to set up the assistant.

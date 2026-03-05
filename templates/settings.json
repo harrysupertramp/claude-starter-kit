@@ -86,6 +86,11 @@
             "type": "command",
             "command": "$HOME/.claude/scripts/pre-compact.sh",
             "timeout": 10
+          },
+          {
+            "type": "prompt",
+            "prompt": "Context is about to be compressed. Before compaction, preserve: 1) Current task status and progress, 2) Key decisions made this session, 3) Files created or modified (with paths), 4) Remaining work items, 5) Any user preferences or corrections discovered. Discard: verbose tool outputs, intermediate search results, redundant file listings, exploratory dead ends.",
+            "timeout": 30
           }
         ]
       }

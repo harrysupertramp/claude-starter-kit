@@ -8,9 +8,11 @@ Out of the box, Claude Code forgets everything when a session ends. This kit giv
 
 | Component | What It Does |
 |---|---|
-| **Session persistence** | Pre-compact hook saves state before context compression. Session notes protocol ensures nothing is lost. |
+| **Guided onboarding** | `/onboard` skill walks you through defining your profile, 12 Favorite Problems, goals, subgoals, and tasks — step by step. |
+| **Session persistence** | Pre-compact hook saves state before context compression. Custom compaction prompt tells Claude what to preserve. Session notes protocol ensures nothing is lost. |
 | **Security guard** | Blocks secrets access, force-push, writes outside `$HOME`, and destructive `rm -rf`. |
 | **Knowledge system** | Structured `knowledge/` directory where Claude accumulates what it learns about you and your projects. |
+| **Agent handoff protocol** | Structured format for chaining subagents without losing context between them. |
 | **Session reminders** | After 10 minutes, Claude gets reminded to save state before ending. |
 | **Self-improvement loop** | Corrections and preferences are externalized to files, not forgotten. |
 
@@ -25,38 +27,63 @@ Out of the box, Claude Code forgets everything when a session ends. This kit giv
 
 ```bash
 # 1. Clone this repo
-git clone https://github.com/YOUR_USERNAME/claude-starter-kit.git
+git clone https://github.com/mp-web3/claude-starter-kit.git
 cd claude-starter-kit
 
 # 2. Run setup
 ./setup.sh
 
-# 3. Start Claude Code in any project
-cd ~/your-project
+# 3. Start your first session
+cd ~/.claude
 claude
 ```
 
-The setup script copies files to `~/.claude/`, makes scripts executable, and initializes a git repo for your config. It will ask for your name and a short bio to personalize the assistant.
+The setup script copies files to `~/.claude/`, asks for your name and a short bio, and initializes a git repo for your config.
+
+## First Session: /onboard (20-30 min)
+
+After setup, start Claude Code and type:
+
+```
+/onboard
+```
+
+Claude will guide you through 5 steps:
+
+1. **User profile** — conversational interview about who you are, what you do, your tools and preferences
+2. **12 Favorite Problems** — the Feynman method: define the deep questions that drive everything you do
+3. **End goal and subgoals** — where you're heading in the next 6-12 months, broken into milestones
+4. **Initial tasks** — what to work on this week, connected to your goals
+5. **AI self-knowledge** — how your assistant should behave and what it knows about itself
+
+You can pause anytime (say "pause") and resume later with `/onboard resume`.
+
+By the end, your `~/.claude/knowledge/` directory will contain your assistant's understanding of you. Every future session builds on this foundation.
 
 ## What Goes Where
 
-After setup, your `~/.claude/` looks like this:
-
 ```
 ~/.claude/
-├── CLAUDE.md              # Global instructions (loads every session, every project)
-├── settings.json          # Hooks, permissions, security config
-├── .gitignore             # Keeps transient files out of git
+├── CLAUDE.md                  # Global instructions (loads every session)
+├── settings.json              # Hooks, permissions, security config
+├── .gitignore
 ├── rules/
-│   ├── sessions.md        # Session logging protocol
-│   └── workflow.md        # Git discipline, task completion
+│   ├── sessions.md            # Session logging protocol
+│   ├── workflow.md            # Git discipline, self-improvement loop
+│   └── handoff.md             # Agent handoff format for subagent chains
 ├── scripts/
-│   ├── global-guard.py    # Security: path boundaries, secrets blocking
-│   ├── pre-compact.sh     # Saves state before context compression
-│   └── session-save-reminder.sh  # Reminds to save before ending
-├── knowledge/             # Claude reads these on demand
-│   └── sessions/          # Session logs accumulate here
-└── statusline.sh          # Context usage, cost, branch info
+│   ├── global-guard.py        # Security: path boundaries, secrets blocking
+│   ├── pre-compact.sh         # Saves state before context compression
+│   └── session-save-reminder.sh
+├── skills/
+│   └── onboard/SKILL.md       # Guided first-session setup
+├── knowledge/                 # Claude reads these on demand
+│   ├── self/identity.md       # AI self-knowledge (created by /onboard)
+│   ├── user/profile.md        # Your profile (created by /onboard)
+│   ├── user/goals.md          # Goals and subgoals (created by /onboard)
+│   ├── problems/              # Your 12 problems (created by /onboard)
+│   └── sessions/              # Session logs (accumulate over time)
+└── statusline.sh              # Context %, cost, branch info
 ```
 
 ## How It Works
@@ -65,10 +92,10 @@ After setup, your `~/.claude/` looks like this:
 
 Claude Code has no memory between sessions. It reads certain files at startup (`CLAUDE.md`, `rules/*.md`, `MEMORY.md`) — everything else is gone. This kit uses those loading points to maintain continuity:
 
-1. **MEMORY.md** (auto-memory) — First 200 lines load automatically. Claude uses it as a cross-session index. Keep it concise.
-2. **Rules** — Always-loaded behavioral instructions. Session protocol, git discipline.
-3. **Knowledge files** — Read on demand. Claude accumulates project knowledge, user preferences, session history here.
-4. **Hooks** — Shell scripts that fire on events. Pre-compact saves state. Session reminders ensure nothing is forgotten.
+1. **MEMORY.md** (auto-memory) — first 200 lines load automatically. Claude uses it as a cross-session index.
+2. **Rules** — always-loaded behavioral instructions. Session protocol, git discipline, handoff format.
+3. **Knowledge files** — read on demand. Claude accumulates project knowledge, user preferences, session history here.
+4. **Hooks** — shell scripts that fire on events. Pre-compact saves state. Custom compaction prompt tells the summarizer what to preserve. Session reminders ensure nothing is forgotten.
 
 ### The Self-Improvement Loop
 
@@ -77,7 +104,11 @@ Session work → Claude notices correction/preference → Writes to knowledge fi
 Next session → Claude reads the file → Doesn't repeat the mistake
 ```
 
-This only works if Claude actually writes things down. The session protocol and reminders enforce this.
+Same correction twice → gets promoted to a rule (always-loaded, every session).
+
+### The 12 Favorite Problems
+
+Your problems are a permanent filter for everything: tasks, reading, opportunities, conversations. If something doesn't connect to at least one problem, it's probably noise. Claude scores content and tasks against your problems automatically.
 
 ### Security
 
@@ -88,39 +119,27 @@ The guard script (`scripts/global-guard.py`) runs on every tool call and blocks:
 - `git add` on secrets files
 - `rm -rf` (use `trash` instead)
 
-## First Session
-
-After setup, start Claude Code and paste this:
-
-> Read ~/.claude/CLAUDE.md and the files in ~/.claude/rules/. Then create a knowledge/user/profile.md with what you know about me so far. Ask me questions to fill in gaps — what I work on, what tools I use, what matters to me. Save everything to files.
-
-This kicks off the "getting to know you" process. Claude will ask questions, write knowledge files, and from the next session onward it remembers.
-
 ## Growing the System
 
-The starter kit is minimal on purpose. As you use it, the system grows:
+The starter kit is minimal on purpose. As you use it, the system grows naturally:
 
 - **Claude creates knowledge files** as it learns about your projects, preferences, tools
 - **Session notes accumulate** in `knowledge/sessions/`, creating searchable history
-- **Rules evolve** — if you correct Claude on the same thing twice, it should become a rule
-- **New skills** can be added to `skills/` as you develop workflows worth repeating
+- **Rules evolve** — corrections become rules, rules become habits
+- **New skills** can be added to `skills/` for workflows worth repeating
 
 The `knowledge/` directory is your assistant's brain. Commit and push it regularly.
 
 ## Customization
 
-### Adding project-specific rules
+**Project-specific rules:** create `.claude/rules/my-rule.md` in any project directory. Loads only for that project.
 
-Create `.claude/rules/my-rule.md` in any project directory. It loads only for that project.
+**Deny rules:** edit `~/.claude/settings.json` → `permissions.deny` to block specific tools/commands globally.
 
-### Adding deny rules
+**Session reminder timing:** edit `scripts/session-save-reminder.sh` — change `600` (seconds) to adjust threshold.
 
-Edit `~/.claude/settings.json` → `permissions.deny` to block specific tools/commands globally.
-
-### Adjusting the session reminder
-
-Edit `scripts/session-save-reminder.sh` — change `600` (seconds) to adjust the reminder threshold.
+**Compaction prompt:** edit the PreCompact prompt hook in `settings.json` to customize what Claude preserves during context compression.
 
 ## Credits
 
-Built from patterns developed by [Mattia Papa](https://mattiapapa.dev) over months of daily Claude Code usage. Inspired by community patterns from the Claude Code ecosystem.
+Built from patterns developed by [Mattia Papa](https://mattiapapa.dev) over months of daily Claude Code usage. The compaction prompt and handoff protocol are inspired by patterns from the Claude Code community.
