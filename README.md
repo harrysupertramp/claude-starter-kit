@@ -2,10 +2,11 @@
 
 Turn Claude Code into a personal AI assistant that remembers you across sessions.
 
-Out of the box, Claude Code forgets everything when a session ends. This kit gives it persistent memory, security guardrails, and a self-improvement loop — so every session builds on the last.
+Out of the box, Claude Code forgets everything when a session ends. This kit gives it persistent memory, security guardrails, a self-improvement loop, and structured workflows for planning and delegation — so every session builds on the last.
 
 ## What You Get
 
+<<<<<<< HEAD
 | Component                  | What It Does                                                                                                                                                     |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Guided onboarding**      | `/onboard` skill walks you through defining your profile, 12 Favorite Problems, goals, subgoals, and tasks — step by step.                                       |
@@ -16,12 +17,27 @@ Out of the box, Claude Code forgets everything when a session ends. This kit giv
 | **Agent handoff protocol** | Structured format for chaining subagents without losing context between them.                                                                                    |
 | **Session reminders**      | After 10 minutes, Claude gets reminded to save state before ending.                                                                                              |
 | **Self-improvement loop**  | Corrections and preferences are externalized to files, not forgotten.                                                                                            |
+=======
+| Component | What It Does |
+|---|---|
+| **Guided onboarding** | `/onboard` walks you through defining your profile, 12 Favorite Problems, goals, subgoals, and tasks. |
+| **Session persistence** | Pre-compact hook saves state before context compression. Custom compaction prompt tells Claude what to preserve. Session notes protocol ensures nothing is lost. |
+| **Security guard** | Blocks secrets access, force-push, direct push to main, writes outside `$HOME`, and destructive `rm -rf`. |
+| **Task system** | SQLite-backed task management with `/tasks`. Tasks connect to your goals and 12 problems. |
+| **Knowledge system** | Structured `knowledge/` directory where Claude accumulates what it learns about you and your projects. |
+| **Plan & implement** | `/plan` enforces a 6-phase workflow: explore, tool discovery, design, approve, implement, verify. No coding before approval. |
+| **Reflection loop** | `/reflect` extracts corrections, preferences, and patterns from your sessions and routes them to the right files. Tracks rule health over time. |
+| **Delegation rules** | Subagent orchestration: authority boundaries, knowledge flow (dual-write pattern), quality control, error handling. |
+| **Development standards** | Code quality limits, testing philosophy, commit conventions. |
+| **Agent handoff protocol** | Structured format for chaining subagents without losing context between them. |
+| **Session reminders** | After 10 minutes, Claude gets reminded to save state before ending. |
+>>>>>>> d151af2 (add delegation, planning, and reflection systems)
 
 ## Prerequisites
 
 - [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed and working
 - Git
-- Python 3.10+ (for the security guard script)
+- Python 3.10+ (for the security guard and learning extraction)
 - jq (for the status line — `brew install jq` on macOS)
 
 ## Setup (5 minutes)
@@ -72,23 +88,34 @@ By the end, your `~/.claude/knowledge/` directory will contain your assistant's 
 │   ├── sessions.md            # Session logging protocol
 │   ├── workflow.md            # Git discipline, self-improvement loop
 │   ├── tasks.md               # Task alignment rules
+│   ├── delegation.md          # Subagent orchestration patterns
+│   ├── development.md         # Code quality, testing, commits
 │   └── handoff.md             # Agent handoff format for subagent chains
 ├── scripts/
 │   ├── global-guard.py        # Security: path boundaries, secrets blocking
 │   ├── db.py                  # SQLite task database
+│   ├── extract-learnings.py   # Session JSONL parser for /reflect
 │   ├── pre-compact.sh         # Saves state before context compression
 │   └── session-save-reminder.sh
 ├── skills/
 │   ├── onboard/SKILL.md       # Guided first-session setup
-│   └── tasks/SKILL.md         # Task management (/tasks)
+│   ├── tasks/SKILL.md         # Task management (/tasks)
+│   ├── plan-and-implement/    # Structured build workflow (/plan)
+│   │   ├── SKILL.md
+│   │   └── LEARNINGS.md       # Skill-specific learnings (grows over time)
+│   └── reflect/               # Session learning extraction (/reflect)
+│       ├── SKILL.md
+│       └── LEARNINGS.md
 ├── knowledge/                 # Claude reads these on demand
 │   ├── self/identity.md       # AI self-knowledge (created by /onboard)
 │   ├── user/profile.md        # Your profile (created by /onboard)
 │   ├── user/goals.md          # Goals and subgoals (created by /onboard)
-│   └── problems/              # Your 12 problems (created by /onboard)
+│   ├── problems/              # Your 12 problems (created by /onboard)
+│   └── projects/              # Project-specific knowledge (grows over time)
 ├── state/
 │   ├── sessions/              # Session logs (accumulate over time)
-│   └── backlog.md             # Task backlog (auto-exported from SQLite)
+│   ├── backlog.md             # Task backlog (auto-exported from SQLite)
+│   └── rule-feedback.json     # Rule health counters (created by /reflect)
 └── statusline.sh              # Context %, cost, branch info
 ```
 
@@ -99,7 +126,7 @@ By the end, your `~/.claude/knowledge/` directory will contain your assistant's 
 Claude Code has no memory between sessions. It reads certain files at startup (`CLAUDE.md`, `rules/*.md`, `MEMORY.md`) — everything else is gone. This kit uses those loading points to maintain continuity:
 
 1. **MEMORY.md** (auto-memory) — first 200 lines load automatically. Claude uses it as a cross-session index.
-2. **Rules** — always-loaded behavioral instructions. Session protocol, git discipline, handoff format.
+2. **Rules** — always-loaded behavioral instructions. Session protocol, git discipline, delegation patterns, development standards.
 3. **Knowledge files** — read on demand. Claude accumulates project knowledge, user preferences, session history here.
 4. **Hooks** — shell scripts that fire on events. Pre-compact saves state. Custom compaction prompt tells the summarizer what to preserve. Session reminders ensure nothing is forgotten.
 
@@ -111,6 +138,29 @@ Next session → Claude reads the file → Doesn't repeat the mistake
 ```
 
 Same correction twice → gets promoted to a rule (always-loaded, every session).
+
+Run `/reflect` periodically to formalize this. It extracts learnings from your session JSONL, detects contradictions with existing rules, and tracks which rules are helping vs hurting via feedback counters.
+
+### Planning Without Drift
+
+The `/plan` skill enforces a gate between thinking and building:
+
+1. **Explore** the codebase and understand what exists
+2. **Search** for existing tools before building custom (MCP server > SDK > custom)
+3. **Design** the implementation with file lists and dependencies
+4. **Get approval** — no coding starts until you approve the plan
+5. **Implement** step by step against the approved plan
+6. **Verify** the acceptance criteria are met
+
+This prevents the most common failure mode: Claude starts building before it fully understands what's needed, then drifts from the plan.
+
+### Delegating to Subagents
+
+The delegation rules (`rules/delegation.md`) solve the "compound knowledge" problem — where subagents don't read what previous subagents learned:
+
+- **Dual-write pattern**: subagents write working docs in the project (for next subagent) AND report findings back (for you to consolidate)
+- **Authority boundaries**: subagents can read, write, and test — but can't commit, push, or make architectural decisions
+- **Quality control**: always spot-check output before committing. "Tests pass" is a claim, not a fact, until you verify it.
 
 ### The 12 Favorite Problems
 
@@ -136,8 +186,9 @@ The starter kit is minimal on purpose. As you use it, the system grows naturally
 
 - **Claude creates knowledge files** as it learns about your projects, preferences, tools
 - **Session notes accumulate** in `state/sessions/`, creating searchable history
-- **Rules evolve** — corrections become rules, rules become habits
+- **Rules evolve** — corrections become rules, rules that hurt get flagged and removed by `/reflect`
 - **New skills** can be added to `skills/` for workflows worth repeating
+- **LEARNINGS.md** files in each skill directory capture what worked and what didn't
 
 The `knowledge/` directory is your assistant's brain. Commit and push it regularly.
 
@@ -150,6 +201,8 @@ The `knowledge/` directory is your assistant's brain. Commit and push it regular
 **Session reminder timing:** edit `scripts/session-save-reminder.sh` — change `600` (seconds) to adjust threshold.
 
 **Compaction prompt:** edit the PreCompact prompt hook in `settings.json` to customize what Claude preserves during context compression.
+
+**Development standards:** edit `rules/development.md` to add your language-specific conventions, preferred linters, or stricter limits.
 
 ## Credits
 

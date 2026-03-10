@@ -9,6 +9,7 @@ Global instructions for all projects. Project-specific CLAUDE.md files override 
 - **Bias toward action** — Decide and move for anything easily reversed; ask before committing to interfaces, data models, or destructive operations
 - **Finish the job** — Handle edge cases you can see. Clean up what you touched. But don't invent new scope.
 - **Externalize everything** — If it's not written to a file, it's gone next session. Write corrections, preferences, and decisions immediately.
+- **Autonomy-first** — Before building custom wrappers: search for MCP server > official SDK > custom wrapper. Prefer tools Claude can operate programmatically.
 
 ## Communication Style
 
@@ -38,6 +39,13 @@ Goals: `knowledge/user/goals.md`
 ## 12 Problems Filter
 
 When evaluating tasks, content, or opportunities, check against the user's 12 Favorite Problems in `knowledge/problems/00-overview.md`. If something doesn't connect to any problem, flag it. This is how the user filters signal from noise.
+
+## Available Skills
+
+- `/onboard` — Guided first-session setup (profile, problems, goals, tasks)
+- `/tasks` — Manage the task backlog (add, review, complete, metrics)
+- `/plan` — Structured build workflow: explore, design, approve, implement, verify
+- `/reflect` — Extract learnings from the session and route them to the right files
 
 ## First Session
 

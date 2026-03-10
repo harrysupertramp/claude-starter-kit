@@ -178,14 +178,15 @@ echo "Setting up ~/.claude/ ..."
 # -----------------------------------------------
 
 # Create directory structure
-mkdir -p "$CLAUDE_DIR"/{rules,scripts,knowledge/self,knowledge/user,knowledge/problems,skills/onboard,skills/tasks,state/sessions}
+mkdir -p "$CLAUDE_DIR"/{rules,scripts,knowledge/self,knowledge/user,knowledge/problems,knowledge/projects,skills/onboard,skills/tasks,skills/plan-and-implement,skills/reflect,state/sessions}
 
 # --- Copy scripts ---
 cp "$SCRIPT_DIR/scripts/global-guard.py" "$CLAUDE_DIR/scripts/"
 cp "$SCRIPT_DIR/scripts/pre-compact.sh" "$CLAUDE_DIR/scripts/"
 cp "$SCRIPT_DIR/scripts/session-save-reminder.sh" "$CLAUDE_DIR/scripts/"
 cp "$SCRIPT_DIR/scripts/db.py" "$CLAUDE_DIR/scripts/"
-chmod +x "$CLAUDE_DIR/scripts/"*.sh
+cp "$SCRIPT_DIR/scripts/extract-learnings.py" "$CLAUDE_DIR/scripts/"
+chmod +x "$CLAUDE_DIR/scripts/"*.sh "$CLAUDE_DIR/scripts/"*.py
 
 # --- Copy rules ---
 for rule in "$SCRIPT_DIR"/rules/*.md; do
@@ -195,6 +196,10 @@ done
 # --- Copy skills ---
 cp "$SCRIPT_DIR/skills/onboard/SKILL.md" "$CLAUDE_DIR/skills/onboard/"
 cp "$SCRIPT_DIR/skills/tasks/SKILL.md" "$CLAUDE_DIR/skills/tasks/"
+cp "$SCRIPT_DIR/skills/plan-and-implement/SKILL.md" "$CLAUDE_DIR/skills/plan-and-implement/"
+cp "$SCRIPT_DIR/skills/plan-and-implement/LEARNINGS.md" "$CLAUDE_DIR/skills/plan-and-implement/"
+cp "$SCRIPT_DIR/skills/reflect/SKILL.md" "$CLAUDE_DIR/skills/reflect/"
+cp "$SCRIPT_DIR/skills/reflect/LEARNINGS.md" "$CLAUDE_DIR/skills/reflect/"
 
 # --- Copy statusline ---
 cp "$SCRIPT_DIR/statusline.sh" "$CLAUDE_DIR/"
@@ -239,10 +244,12 @@ echo ""
 echo "Files installed:"
 echo "  ~/.claude/CLAUDE.md          — global instructions"
 echo "  ~/.claude/settings.json      — hooks + security"
-echo "  ~/.claude/rules/             — session, workflow, handoff, task rules"
-echo "  ~/.claude/scripts/           — security guard, pre-compact, reminders, db"
+echo "  ~/.claude/rules/             — session, workflow, handoff, task, delegation, development rules"
+echo "  ~/.claude/scripts/           — security guard, pre-compact, reminders, db, learning extractor"
 echo "  ~/.claude/skills/onboard/    — guided first-session setup"
 echo "  ~/.claude/skills/tasks/      — task management (/tasks)"
+echo "  ~/.claude/skills/plan-and-implement/ — structured build workflow (/plan)"
+echo "  ~/.claude/skills/reflect/    — session learning extraction (/reflect)"
 echo "  ~/.claude/tasks.db           — SQLite task store"
 echo "  ~/.claude/knowledge/         — your assistant's growing brain"
 echo "  ~/.claude/statusline.sh      — context/cost display"

@@ -284,7 +284,10 @@ Adapt the tone to match the user's communication style observed in Steps 1-4.
    > From now on, every session starts by reading these files. I'll remember who you are,
    > what you're working toward, and what to do next.
    >
-   > Use `/tasks` to manage your backlog — add tasks, review priorities, mark things done.
+   > **Skills available:**
+   > - `/tasks` — manage your backlog (add tasks, review priorities, mark things done)
+   > - `/plan` — structured build workflow (explore, design, approve, implement, verify). Use this when building anything non-trivial.
+   > - `/reflect` — extract what I learned this session and write it to the right files. Run this periodically to close the learning loop.
 
 6. **Create session note** in `state/sessions/YYYY-MM-DD-onboarding.md`
 
