@@ -6,16 +6,16 @@ Out of the box, Claude Code forgets everything when a session ends. This kit giv
 
 ## What You Get
 
-| Component | What It Does |
-|---|---|
-| **Guided onboarding** | `/onboard` skill walks you through defining your profile, 12 Favorite Problems, goals, subgoals, and tasks — step by step. |
-| **Session persistence** | Pre-compact hook saves state before context compression. Custom compaction prompt tells Claude what to preserve. Session notes protocol ensures nothing is lost. |
-| **Security guard** | Blocks secrets access, force-push, direct push to main, writes outside `$HOME`, and destructive `rm -rf`. |
-| **Task system** | SQLite-backed task management with `/tasks` skill. Tasks connect to your goals and 12 problems. |
-| **Knowledge system** | Structured `knowledge/` directory where Claude accumulates what it learns about you and your projects. |
-| **Agent handoff protocol** | Structured format for chaining subagents without losing context between them. |
-| **Session reminders** | After 10 minutes, Claude gets reminded to save state before ending. |
-| **Self-improvement loop** | Corrections and preferences are externalized to files, not forgotten. |
+| Component                  | What It Does                                                                                                                                                     |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Guided onboarding**      | `/onboard` skill walks you through defining your profile, 12 Favorite Problems, goals, subgoals, and tasks — step by step.                                       |
+| **Session persistence**    | Pre-compact hook saves state before context compression. Custom compaction prompt tells Claude what to preserve. Session notes protocol ensures nothing is lost. |
+| **Security guard**         | Blocks secrets access, force-push, direct push to main, writes outside `$HOME`, and destructive `rm -rf`.                                                        |
+| **Task system**            | SQLite-backed task management with `/tasks` skill. Tasks connect to your goals and 12 problems.                                                                  |
+| **Knowledge system**       | Structured `knowledge/` directory where Claude accumulates what it learns about you and your projects.                                                           |
+| **Agent handoff protocol** | Structured format for chaining subagents without losing context between them.                                                                                    |
+| **Session reminders**      | After 10 minutes, Claude gets reminded to save state before ending.                                                                                              |
+| **Self-improvement loop**  | Corrections and preferences are externalized to files, not forgotten.                                                                                            |
 
 ## Prerequisites
 
@@ -119,12 +119,14 @@ Your problems are a permanent filter for everything: tasks, reading, opportuniti
 ### Security
 
 The guard script (`scripts/global-guard.py`) runs on every tool call and blocks:
+
 - Reading/writing outside `$HOME` and `/tmp`
 - Accessing `.env`, `.key`, `.pem`, `.secret` files
 - `git push --force`
 - `git add` on secrets files
 
 Additional Bash guards block:
+
 - `rm -rf` (use `trash` instead)
 - Direct push to `main` or `master` (use feature branches)
 
