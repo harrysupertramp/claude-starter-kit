@@ -25,6 +25,7 @@ This is different from the `@import` syntax in `CLAUDE.md`, which loads files in
 ## What's Included
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 | Component                  | What It Does                                                                                                                                                     |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Guided onboarding**      | `/onboard` skill walks you through defining your profile, 12 Favorite Problems, goals, subgoals, and tasks — step by step.                                       |
@@ -70,6 +71,20 @@ This is different from the `@import` syntax in `CLAUDE.md`, which loads files in
 | Agent definitions | 4 pre-built agents: code-reviewer, bug-fixer, implementer, researcher |
 | Development standards | Code quality limits, testing philosophy, commit conventions |
 >>>>>>> 2e8d21f (feat: add 4 agent definitions + rewrite README for clarity)
+=======
+| Component             | What It Does                                                                             |
+| --------------------- | ---------------------------------------------------------------------------------------- |
+| `/onboard`            | 20-30 min guided setup: profile, 12 Favorite Problems, goals, tasks, AI identity         |
+| `/tasks`              | SQLite-backed task management. Tasks connect to your goals and problems                  |
+| `/plan`               | 6-phase gated workflow: explore → discover tools → design → approve → implement → verify |
+| `/reflect`            | Extracts corrections and preferences from sessions, routes them to the right files       |
+| Security guard        | Blocks secrets access, force-push, writes outside `$HOME`, `rm -rf`                      |
+| Session persistence   | Pre-compact hook saves state before context compression. Session reminders after 10 min  |
+| Delegation rules      | Subagent orchestration: authority boundaries, knowledge flow, quality control            |
+| Agent handoff         | Structured format for chaining subagents without losing context                          |
+| Agent definitions     | 4 pre-built agents: code-reviewer, bug-fixer, implementer, researcher                    |
+| Development standards | Code quality limits, testing philosophy, commit conventions                              |
+>>>>>>> 77bf3ff (update README)
 
 ## Setup (5 minutes)
 
@@ -143,13 +158,13 @@ Type `/onboard` — Claude walks you through defining your profile, problems, go
 
 The guard script (`scripts/global-guard.py`) hooks into Claude Code's `PreToolUse` event — it runs before every tool call and can block dangerous operations.
 
-| Category | What's Blocked | Why |
-|---|---|---|
-| Path boundaries | Reads/writes outside `$HOME` and `/tmp` | Prevents system file modification |
-| Secrets | `.env`, `.key`, `.pem`, `.secret` files | Prevents accidental exposure |
-| Git safety | `git push --force`, `git add` on secret files | Prevents data loss and secret commits |
-| Destructive ops | `rm -rf` | Use `trash` instead (recoverable) |
-| Branch protection | Direct push to `main`/`master` | Forces feature branch workflow |
+| Category          | What's Blocked                                | Why                                   |
+| ----------------- | --------------------------------------------- | ------------------------------------- |
+| Path boundaries   | Reads/writes outside `$HOME` and `/tmp`       | Prevents system file modification     |
+| Secrets           | `.env`, `.key`, `.pem`, `.secret` files       | Prevents accidental exposure          |
+| Git safety        | `git push --force`, `git add` on secret files | Prevents data loss and secret commits |
+| Destructive ops   | `rm -rf`                                      | Use `trash` instead (recoverable)     |
+| Branch protection | Direct push to `main`/`master`                | Forces feature branch workflow        |
 
 **How it works:** The guard is configured in `settings.json` as a `PreToolUse` hook. Claude Code sends the tool name and input as JSON to stdin. The script checks against its rules and returns `{"allow": true}` or `{"blocked": true, "reason": "..."}`. Claude sees the reason and adjusts.
 
@@ -159,12 +174,12 @@ Customize by editing `scripts/global-guard.py` — add directory blocks, file ex
 
 The `agents/` directory contains pre-built agent definitions for common development tasks. These work with Claude Code's Agent tool for delegating work to subagents.
 
-| Agent | Purpose | Writes Code? |
-|---|---|---|
-| `code-reviewer` | Reviews diffs for bugs, security issues, style violations, test gaps | No (read-only) |
-| `bug-fixer` | Takes a symptom → reproduces → finds root cause → fixes + tests | Yes |
-| `implementer` | Implements features from a plan/spec in dependency order | Yes |
-| `researcher` | Explores codebases, reads docs, answers technical questions | No (research only) |
+| Agent           | Purpose                                                              | Writes Code?       |
+| --------------- | -------------------------------------------------------------------- | ------------------ |
+| `code-reviewer` | Reviews diffs for bugs, security issues, style violations, test gaps | No (read-only)     |
+| `bug-fixer`     | Takes a symptom → reproduces → finds root cause → fixes + tests      | Yes                |
+| `implementer`   | Implements features from a plan/spec in dependency order             | Yes                |
+| `researcher`    | Explores codebases, reads docs, answers technical questions          | No (research only) |
 
 All agents follow the delegation rules: they can read, write, and test, but cannot commit, push, or make architectural decisions. Each agent produces structured output (status, summary, files changed, next steps) for the main session to review.
 
